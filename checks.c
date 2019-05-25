@@ -188,8 +188,8 @@ static int matches( const char *actualType, const char *expectedTypes) {
 #	define matches( a, b) ( ! strcmp( a, b))
 #endif
 
-#define WITH_UNION_TYPES
-#ifdef  WITH_UNION_TYPES
+#define WITH_INTERSECTION_TYPES
+#ifdef  WITH_INTERSECTION_TYPES
 
 /** Return true if any of actualTypes occur in expecteTypes, being
 lists of type names separated by '&' and '|' chars respectively.
@@ -197,16 +197,16 @@ lists of type names separated by '&' and '|' chars respectively.
 If `WITH_SUM_TYPES` is disabled, the expectedTypes list must have one
 element, i.e. no '|' separator character.
 
-If `WITH_UNION_TYPES` is disabled, the actualTypes list must have one
+If `WITH_INTERSECTION_TYPES` is disabled, the actualTypes list must have one
 element, i.e. no '&' separator character.
 
-@function [parent=#global] union_matches
-@param  actualTypes the list of types which the tested object fufills (union type)
+@function [parent=#global] intersection_matches
+@param  actualTypes the list of types which the tested object fufills (intersection type)
 @param  expectedTypes the list of types listed as acceptable in `checks()`
  for this argument
 @return whether any of `actualTypes` is listed in `expectedTypes`.
 */
-static int union_matches( const char *actualTypes, const char *expectedTypes) {
+static int intersection_matches( const char *actualTypes, const char *expectedTypes) {
     if(matches(actualTypes, expectedTypes)) return 1;
 
     char *actualType, *actualTypesCopy, *tofree;
@@ -223,7 +223,7 @@ static int union_matches( const char *actualTypes, const char *expectedTypes) {
     return 0;
 }
 #else
-#	define union_matches( a, b) ( matches( a, b))
+#	define intersection_matches( a, b) ( matches( a, b))
 #endif
 
 /*** 
@@ -268,11 +268,11 @@ static int checks( lua_State *L) {
             lua_pop( L, 1); continue; // -
         }
 
-        /* 3. Check for type name in metatable. */ //includes union types
+        /* 3. Check for type name in metatable. */ //includes intersection types
         if( lua_getmetatable( L, -1)) {       // val, mt
             lua_getfield( L, -1, "__type");   // val, mt, __type?
             if( lua_isstring( L, -1)) {       // val, mt, __type
-                if( union_matches( luaL_checkstring( L, -1), expectedType)) {
+                if( intersection_matches( luaL_checkstring( L, -1), expectedType)) {
                     lua_pop( L, 3); continue; // -
                 } else { /* non-matching __type field. */
                     lua_pop( L, 2);           // val
