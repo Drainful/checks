@@ -121,6 +121,7 @@ Usage examples
 
 #include "checks.h"
 #include "lauxlib.h"
+#include <stdlib.h>
 #include <string.h>
 
 /** Generate and throw an error.
@@ -185,6 +186,44 @@ static int matches( const char *actualType, const char *expectedTypes) {
 }
 #else
 #	define matches( a, b) ( ! strcmp( a, b))
+#endif
+
+#define WITH_UNION_TYPES
+#ifdef  WITH_UNION_TYPES
+
+/** Return true if any of actualTypes occur in expecteTypes, being
+lists of type names separated by '&' and '|' chars respectively.
+
+If `WITH_SUM_TYPES` is disabled, the expectedTypes list must have one
+element, i.e. no '|' separator character.
+
+If `WITH_UNION_TYPES` is disabled, the actualTypes list must have one
+element, i.e. no '&' separator character.
+
+@function [parent=#global] union_matches
+@param  actualTypes the list of types which the tested object fufills (union type)
+@param  expectedTypes the list of types listed as acceptable in `checks()`
+ for this argument
+@return whether any of `actualTypes` is listed in `expectedTypes`.
+*/
+static int union_matches( const char *actualTypes, const char *expectedTypes) {
+    if(matches(actualTypes, expectedTypes)) return 1;
+
+    char *actualType, *actualTypesCopy, *tofree;
+    tofree = actualTypesCopy = strdup(actualTypes);
+    actualType = strtok(actualTypesCopy, "&");
+    while (actualType != NULL) {
+        if(matches(actualType, expectedTypes)) {
+            free(tofree);
+            return 1;
+        }
+        actualType = strtok (NULL, "&");
+    }
+    free(tofree);
+    return 0;
+}
+#else
+#	define union_matches( a, b) ( matches( a, b))
 #endif
 
 /*** 
