@@ -1,6 +1,6 @@
 --*-lua-*-
 package = "checks"
-version = "1.0-2"
+version = "1.0-3"
 source = {
     url = "https://github.com/fab13n/checks/raw/master/checks-1.0-2.tar.gz",
     dir = "checks",
