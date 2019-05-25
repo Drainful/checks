@@ -268,11 +268,11 @@ static int checks( lua_State *L) {
             lua_pop( L, 1); continue; // -
         }
 
-        /* 3. Check for type name in metatable. */
+        /* 3. Check for type name in metatable. */ //includes union types
         if( lua_getmetatable( L, -1)) {       // val, mt
             lua_getfield( L, -1, "__type");   // val, mt, __type?
             if( lua_isstring( L, -1)) {       // val, mt, __type
-                if( matches( luaL_checkstring( L, -1), expectedType)) {
+                if( union_matches( luaL_checkstring( L, -1), expectedType)) {
                     lua_pop( L, 3); continue; // -
                 } else { /* non-matching __type field. */
                     lua_pop( L, 2);           // val
